@@ -18,10 +18,6 @@ var Windex = exports = function(selector, context) {
     throw new Error("$(" + selector + ", " + context + "): selector is not a Node or a String");
   }
 
-  if (!Windex.defaultContext) {
-    throw new Error('You must define Windex.defaultContext() before calling Windex without a context.');
-  }
-
   // TODO: return documents, windows
   if (selector == "body") return Windex(defaultContext());
   if (selector == "!document") {
@@ -49,7 +45,7 @@ var Windex = exports = function(selector, context) {
   return new WindexNodes([context], selector, context).find(selector);
 };
 
-Windex.defaultContext = null;
+Windex.prototype.defaultContext = null;
 
 // See: http://api.jquery.com/jQuery.extend/
 Windex.extend = function () {
@@ -123,6 +119,8 @@ WindexNodes.prototype.find = function (selector) {
 
   return new WindexNodes(nodes, selector, context);
 };
+
+WindexNodes.prototype.toArray = function () { return [].concat(this); }
 
 WindexNodes.prototype.each = function (f) { return Windex.each(this, f); };
 
