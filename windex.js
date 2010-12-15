@@ -867,33 +867,4 @@ var WindexUrl = function (url) {
 // See: https://developer.mozilla.org/en/nsIIOService#newURI.28.29
 WindexUrl.prototype.attr = function (name) { return this._url[name]; };
 
-// See: http://plugins.jquery.com/files/jquery.cookie.js.txt
-Windex.cookie = function (name, value, options) {
-  if (value === undefined) { return this._cookieGet(name); }
-  if (value === null) { return this._cookieRemove(name, options); }
-};
-
-var ioService = Components.classes["@mozilla.org/network/io-service;1"].
-    getService(Components.interfaces.nsIIOService);
-var cookieUri = ioService.newURI(prefs.get('service_url'), null, null);
-
-// See https://developer.mozilla.org/en/Code_snippets/Cookies
-var cookieService = Components.classes["@mozilla.org/cookieService;1"].
-    getService(Components.interfaces.nsICookieService);
-Windex._cookieGet = function (name) {
-  var cookieString = cookieService.getCookieString(cookieUri, null);
-  if (!cookieString) { return null; }
-  var matches = cookieString.split("; ").filter(function (cookie) {
-    return cookie.match("^" + name + "=(.+)$");
-  });
-  return (matches.length >= 1) ? matches[0][1] : null;
-};
-
-// See https://developer.mozilla.org/en/nsICookieManager#remove.28.29
-var cookieManager = Components.classes["@mozilla.org/cookiemanager;1"].
-    getService(Components.interfaces.nsICookieManager);
-Windex._cookieRemove = function (name, options) {
-  cookieManager.remove(cookieUri.host, name, options.path, false);
-}
-
 Windex.browser = {};
