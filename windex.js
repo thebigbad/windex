@@ -130,8 +130,8 @@ WindexNodes.prototype.filter = function (f) {
 
 // See: http://api.jquery.com/children/
 WindexNodes.prototype.children = function (selector) {
-  var children = [];
   if (selector) { return this._childrenMatching(selector); }
+  var children = [];
   this.forEach(function (node) {
     var nodeList = node.childNodes;
     for (i = 0; i < nodeList.length; i++) {
@@ -151,6 +151,25 @@ WindexNodes.prototype._childrenMatching = function (selector) {
     matches.forEach(function (windexNode) { children.push(windexNode); });
   });
   return new WindexNodes(children, selector, this[0]);
+};
+
+// See: http://api.jquery.com/parent/
+WindexNodes.prototype.parent = function (selector) {
+  if (selector) { return this._parentMatching(selector); }
+  return new WindexNodes(this.map(function (node) { return node.parentNode; }));
+};
+
+WindexNodes.prototype._parentMatching = function (selector) {
+  var parents = [];
+  this.forEach(function (node) {
+    var parent = node.parentNode;
+    Windex(selector, parent.parentNode).forEach(function (node) {
+      if (node.wrappedJSObject === parent.wrappedJSObject) {
+        parents.push(parent);
+      }
+    });
+  });
+  return new WindexNodes(parents, selector, parents[0]);
 };
 
 // See: http://api.jquery.com/addClass/
