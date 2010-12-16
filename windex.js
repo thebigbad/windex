@@ -1,5 +1,6 @@
-var Cc = Components.classes;
-var Ci = Components.interfaces;
+var Cc = Components.classes,
+    Ci = Components.interfaces,
+    Cu = Components.utils;
 
 var isNode = function (object) {
   if (object instanceof Ci.nsIDOMText) return false;
@@ -32,6 +33,7 @@ var Windex = exports = function(selector, context) {
   }
 
   if (!context) {
+    Cu.reportError(selector);
     return Windex(selector, defaultContext());
   }
 
@@ -88,6 +90,12 @@ Windex.inArray = function (e, a) {
 // See: http://github.com/jeresig/sizzle/blob/master/sizzle.js
 Windex.contains = function (ancestor, descendant) {
   return !!(ancestor.compareDocumentPosition(descendant) & 16);
+};
+
+Windex.matchesSelector = function (node, selector) {
+  return Windex(selector, node.parentNode).some(function (match) {
+    return node.wrappedJSObject === match.wrappedJSObject;
+  });
 };
 
 var WindexNodes = function (nodes, selector, context) {
@@ -160,15 +168,8 @@ WindexNodes.prototype.parent = function (selector) {
 };
 
 WindexNodes.prototype._parentMatching = function (selector) {
-  var parents = [];
-  this.forEach(function (node) {
-    var parent = node.parentNode;
-    Windex(selector, parent.parentNode).forEach(function (node) {
-      if (node.wrappedJSObject === parent.wrappedJSObject) {
-        parents.push(parent);
-      }
-    });
-  });
+  var parents = this.map(function (node) { return node.parentNode; }).
+      filter(function (node) {return Windex.matchesSelector(node, selector);});
   return new WindexNodes(parents, selector, parents[0]);
 };
 
@@ -841,14 +842,29 @@ WindexNodes.prototype.last = function () {
   return new WindexNodes([node], this._selector, this._context);
 };
 
-WindexNodes.prototype.next = function () {
-  var selector = this._selector;
-  var context = this._context;
-  var node = this[0];
-  if (!node.nextSibling) { return new WindexNodes([], selector, context); }
-  node = node.nextSibling; // adjacent text node
-  if (!node.nextSibling) { return new WindexNodes([], selector, context); }
-  return new WindexNodes([node.nextSibling], selector, context);
+WindexNodes.prototype.next = function (selector) {
+  if (selector) { return this._nextMatching(selector); }
+  var nodes = [];
+  this.forEach(function (node) {
+    if (!node.nextSibling) { return; }
+    node = node.nextSibling; // adjacent text node
+    if (!node.nextSibling) { return; }
+    nodes.push(node.nextSibling);
+  });
+  return new WindexNodes(nodes, this._selector, this._context);
+};
+
+WindexNodes.prototype._nextMatching = function (selector) {
+  var nodes = [];
+  this.forEach(function (node) {
+    if (!node.nextSibling) { return; }
+    node = node.nextSibling; // adjacent text node
+    if (!node.nextSibling) { return; }
+    node = node.nextSibling;
+    if (!Windex.matchesSelector(node, selector)) { return; }
+    nodes.push(node);
+  });
+  return new WindexNodes(nodes, this._selector, this._context);
 };
 
 WindexNodes.prototype.prev = function () {
