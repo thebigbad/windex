@@ -670,7 +670,7 @@ WindexNodes.prototype.live = function (name, handler) {
   context.addEventListener(name, delegater, false);
 };
 
-// See: http://api.jquery.com/unbind
+// See: http://api.jquery.com/die
 WindexNodes.prototype.die = function (name, handler) {
   if (!name) { return this._dieAll(); }
   return this._dieEvent(name, handler);
