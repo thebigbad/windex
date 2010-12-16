@@ -651,6 +651,8 @@ WindexNodes.prototype._unbindEvent = function (name, handler) {
   };
 });
 
+var delegates = [];
+
 // See: http://api.jquery.com/live
 WindexNodes.prototype.live = function (name, handler) {
   var selector = this._selector;
@@ -662,8 +664,40 @@ WindexNodes.prototype.live = function (name, handler) {
       if (isTarget || containsTarget) { handler.apply(node, [event]); }
     });
   };
+  if (!delegates[context]) { delegates[context] = {}; }
+  if (!delegates[context][name]) { delegates[context][name] = []; }
+  delegates[context][name].push({ wrapped: delegate, handler: handler });
   context.addEventListener(name, delegater, false);
 };
+
+// See: http://api.jquery.com/unbind
+WindexNodes.prototype.die = function (name, handler) {
+  if (!name) { return this._dieAll(); }
+  return this._dieEvent(name, handler);
+}
+
+WindexNodes.prototype._dieAll = function () {
+  var node = this._context;
+  for (name in delegates[node]) {
+    delegates[node][name].forEach(function (bridge) {
+      node.removeEventListener(name, bridge.wrapped, false);
+    });
+  }
+  delete delegates[node];
+  return this;
+};
+
+WindexNodes.prototype._dieEvent = function (name, handler) {
+  var node = this._context;
+  if (!delegates[node][name]) return;
+  delegates[node][name] = delegates[node][name].filter(function (bridge) {
+    if (bridge.handler !== handler) return true;
+    node.removeEventListener(name, bridge.wrapped, false);
+    return false;
+  });
+  return this;
+};
+
 
 // See: http://api.jquery.com/attr/
 WindexNodes.prototype.attr = function (name, value) {
