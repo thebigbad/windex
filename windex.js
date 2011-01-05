@@ -910,6 +910,13 @@ WindexNodes.prototype.prev = function () {
   return new WindexNodes([node.previousSibling], selector, context);
 };
 
+// See: http://api.jquery.com/is/
+WindexNodes.prototype.is = function (selector) {
+  return this.some(function (node) {
+    return Windex.matchesSelector(node, selector);
+  });
+};
+
 Windex.url = { setUrl: function (url) { return new WindexUrl(url); } };
 
 var WindexUrl = function (url) {
