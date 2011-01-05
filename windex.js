@@ -33,7 +33,6 @@ var Windex = exports = function(selector, context) {
   }
 
   if (!context) {
-    Cu.reportError(selector);
     return Windex(selector, Windex.defaultContext());
   }
 
