@@ -20,21 +20,21 @@ var Windex = exports = function(selector, context) {
   }
 
   // TODO: return documents, windows
-  if (selector == "body") return Windex(defaultContext());
+  if (selector == "body") return Windex(this.defaultContext());
   if (selector == "!document") {
-    var document = defaultContext().ownerDocument;
+    var document = this.defaultContext().ownerDocument;
     return Windex(document);
   }
   if (selector == "!window") {
-    return Windex(defaultContext());
-    var document = defaultContext().ownerDocument;
+    return Windex(this.defaultContext());
+    var document = this.defaultContext().ownerDocument;
     var window = document.defaultView;
     return Windex(window);
   }
 
   if (!context) {
     Cu.reportError(selector);
-    return Windex(selector, defaultContext());
+    return Windex(selector, this.defaultContext());
   }
 
   // if passed in a list of nodes, meant the first one
@@ -47,7 +47,7 @@ var Windex = exports = function(selector, context) {
   return new WindexNodes([context], selector, context).find(selector);
 };
 
-Windex.prototype.defaultContext = null;
+Windex.defaultContext = null;
 
 // See: http://api.jquery.com/jQuery.extend/
 Windex.extend = function () {
