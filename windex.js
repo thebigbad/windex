@@ -666,7 +666,7 @@ WindexNodes.prototype.live = function (name, handler) {
   };
   if (!delegates[context]) { delegates[context] = {}; }
   if (!delegates[context][name]) { delegates[context][name] = []; }
-  delegates[context][name].push({ wrapped: delegate, handler: handler });
+  delegates[context][name].push({ wrapped: delegater, handler: handler });
   context.addEventListener(name, delegater, false);
 };
 
