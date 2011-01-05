@@ -20,21 +20,21 @@ var Windex = exports = function(selector, context) {
   }
 
   // TODO: return documents, windows
-  if (selector == "body") return Windex(this.defaultContext());
+  if (selector == "body") return Windex(Windex.defaultContext());
   if (selector == "!document") {
-    var document = this.defaultContext().ownerDocument;
+    var document = Windex.defaultContext().ownerDocument;
     return Windex(document);
   }
   if (selector == "!window") {
-    return Windex(this.defaultContext());
-    var document = this.defaultContext().ownerDocument;
+    return Windex(Windex.defaultContext());
+    var document = Windex.defaultContext().ownerDocument;
     var window = document.defaultView;
     return Windex(window);
   }
 
   if (!context) {
     Cu.reportError(selector);
-    return Windex(selector, this.defaultContext());
+    return Windex(selector, Windex.defaultContext());
   }
 
   // if passed in a list of nodes, meant the first one
