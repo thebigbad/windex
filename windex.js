@@ -470,6 +470,7 @@ WindexNodes.prototype._cssSet = function (name, value) {
 
   WindexNodes.prototype["_" + dim + "Get"] = function () {
     var node = this[0];
+    if (!node) { return 0; }
     if (node instanceof Components.interfaces.nsIDOMHTMLDocument) {
       return this["_" + dim + "GetForDocument"]();
     }
