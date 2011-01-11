@@ -918,6 +918,14 @@ WindexNodes.prototype.is = function (selector) {
   });
 };
 
+// See: http://api.jquery.com/not/
+WindexNodes.prototype.not = function (selector) {
+  var remains = this.filter(function (node) {
+    return !Windex.matchesSelector(node, selector);
+  });
+  return new WindexNodes(remains, this._selector, this._context);
+};
+
 Windex.url = { setUrl: function (url) { return new WindexUrl(url); } };
 
 var WindexUrl = function (url) {
