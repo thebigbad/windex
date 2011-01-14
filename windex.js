@@ -97,6 +97,12 @@ Windex.matchesSelector = function (node, selector) {
   });
 };
 
+// See: http://api.jquery.com/jQuery.isEmptyObject/
+var Windex.isEmptyObject = function (obj) {
+  for(var i in obj) { return false; }
+  return true;
+};
+
 var WindexNodes = function (nodes, selector, context) {
   for (i = 0; i < nodes.length; i++) {
     // See: https://developer.mozilla.org/en/XPCNativeWrapper
