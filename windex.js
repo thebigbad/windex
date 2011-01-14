@@ -453,7 +453,8 @@ WindexNodes.prototype._cssSet = function (name, value) {
   var translations = {
     "z-index": "zIndex",
     "overflow-y": "overflowY",
-    "overflow-x": "overflowX"
+    "overflow-x": "overflowX",
+    "margin-top": "marginTop"
   };
   if (translations[name]) { name = translations[name]; }
   this.forEach(function (node) { node.style[name] = value; });
