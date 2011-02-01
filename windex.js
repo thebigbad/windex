@@ -650,6 +650,7 @@ WindexNodes.prototype._unbindEvent = function (name, handler) {
   "submit", // See: http://api.jquery.com/submit/
   "focus", // See: http://api.jquery.com/focus/
   "blur", // See: http://api.jquery.com/blur/
+  "change", // See: http://api.jquery.com/change/
   "command"
 ].forEach(function (event) {
   WindexNodes.prototype[event] = function (handler) {
