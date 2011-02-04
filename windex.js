@@ -554,6 +554,7 @@ WindexNodes.prototype.outerWidth = function (includeMargin) {
 
 // See: http://api.jquery.com/outerHeight/
 WindexNodes.prototype.outerHeight = function (includeMargin) {
+  if (this.size() == 0) return 0;
   var node = this;
   var dims = {
     padding: 0,
