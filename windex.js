@@ -628,7 +628,7 @@ WindexNodes.prototype._unbindAll = function () {
 
 WindexNodes.prototype._unbindEvent = function (name, handler) {
   this.forEach(function (node) {
-    if (!events[node][name]) return;
+    if (!events[node] || !events[node][name]) return;
     events[node][name] = events[node][name].filter(function (bridge) {
       if (bridge.handler !== handler) return true;
       node.removeEventListener(name, bridge.wrapped, false);
