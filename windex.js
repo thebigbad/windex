@@ -612,6 +612,7 @@ WindexNodes.prototype.bind = function (name, handler) {
 // See: http://api.jquery.com/unbind
 WindexNodes.prototype.unbind = function (name, handler) {
   if (!name) { return this._unbindAll(); }
+  if (!handler) { return this._unbindEventAll(name); }
   return this._unbindEvent(name, handler);
 }
 
@@ -623,6 +624,17 @@ WindexNodes.prototype._unbindAll = function () {
       });
     }
     delete events[node];
+  });
+  return this;
+};
+
+WindexNodes.prototype._unbindEventAll = function (name) {
+  this.forEach(function (node) {
+    if (!events[node] || !events[node][name]) return;
+    events[node][name].forEach(function (bridge) {
+      node.removeEventListener(name, bridge.wrapped, false);
+    });
+    delete events[node][name];
   });
   return this;
 };
