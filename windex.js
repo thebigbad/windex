@@ -188,7 +188,7 @@ WindexNodes.prototype.parents = function (selector) {
       parents.push(node);
     }
   });
-  return new WindexNodes(parentss);
+  return new WindexNodes(parents);
 };
 
 WindexNodes.prototype._parentsMatching = function (selector) {
