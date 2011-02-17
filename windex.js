@@ -182,8 +182,9 @@ WindexNodes.prototype._parentMatching = function (selector) {
 WindexNodes.prototype.parents = function (selector) {
   if (selector) { return this._parentsMatching(selector); }
   var parents = [];
-  this.each(function (i, node) {
-    while (node.parentNode) {
+  this.forEach(function (node) {
+    // See: https://developer.mozilla.org/En/DOM/Node.nodeName
+    while (node.parentNode && node.parentNode.nodeName != '#document') {
       node = node.parentNode;
       parents.push(node);
     }
@@ -192,8 +193,9 @@ WindexNodes.prototype.parents = function (selector) {
 };
 
 WindexNodes.prototype._parentsMatching = function (selector) {
-  var parents = this.parents().toArray().
-      filter(function (node) {return Windex.matchesSelector(node, selector);});
+  var parents = this.parents().filter(function (i, n) {
+    return Windex.matchesSelector(n, selector);
+  });
   return new WindexNodes(parents, selector, parents[0]);
 };
 
@@ -231,6 +233,7 @@ WindexNodes.prototype.removeClass = function (className) {
 
 WindexNodes.prototype._removeAllClasses = function () {
   this.forEach(function (node) { node.className = ''; });
+  return this;
 };
 
 // See: http://api.jquery.com/toggleClass/
