@@ -178,6 +178,25 @@ WindexNodes.prototype._parentMatching = function (selector) {
   return new WindexNodes(parents, selector, parents[0]);
 };
 
+// See: http://api.jquery.com/parents/
+WindexNodes.prototype.parents = function (selector) {
+  if (selector) { return this._parentsMatching(selector); }
+  var parents = [];
+  this.each(function (i, node) {
+    while (node.parentNode) {
+      node = node.parentNode;
+      parents.push(node);
+    }
+  });
+  return new WindexNodes(parentss);
+};
+
+WindexNodes.prototype._parentsMatching = function (selector) {
+  var parents = this.parents().toArray().
+      filter(function (node) {return Windex.matchesSelector(node, selector);});
+  return new WindexNodes(parents, selector, parents[0]);
+};
+
 // See: http://api.jquery.com/addClass/
 WindexNodes.prototype.addClass = function (className) {
   var classesToAdd = className.split(" ");
