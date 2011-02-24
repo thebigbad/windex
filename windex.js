@@ -376,14 +376,10 @@ WindexNodes.prototype.before = function (arg) {
 // See: https://developer.mozilla.org/en/Code_snippets/HTML_to_DOM
 WindexNodes.prototype._beforeHTML = function (html) {
   this.forEach(function (node) {
-    if (node.ownerDocument instanceof Components.interfaces.nsIImageDocument) {
-      var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"].
-          getService(Components.interfaces.nsIScriptableUnescapeHTML).
-          parseFragment(html, false, null, node);
-      node.parentNode.insertBefore(fragment, node);
-    } else {
-      node.innerHTML = node.innerHTML + html;
-    }
+    var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"].
+        getService(Components.interfaces.nsIScriptableUnescapeHTML).
+        parseFragment(html, false, null, node);
+    node.parentNode.insertBefore(fragment, node);
   });
   return this;
 };
@@ -401,6 +397,50 @@ WindexNodes.prototype._beforeWindexNodes = function (windexNodes) {
   this.forEach(function (node) {
     windexNodes.forEach(function (nodeToAppend) {
       node.parentNode.insertBefore(nodeToAppend.cloneNode(true), node);
+    });
+  });
+  return this;
+};
+
+// See: http://api.jquery.com/after/
+WindexNodes.prototype.after = function (arg) {
+  if (typeof arg == "string" || typeof arg == "number") {
+    return this._afterHTML(arg);
+  }
+  if (isNode(arg)) { return this._afterNode(arg); }
+  if (arg instanceof WindexNodes) { return this._afterWindexNodes(arg); }
+  throw new Error("'" + arg + "' is not a String, Node, or WindexNodes");
+};
+
+// See: http://snipplr.com/view/2107/insertafter-function-for-the-dom/
+var after = function (node, toAdd) {
+  if (!node.nextSibling) { return node.parentNode.append(toAdd); }
+  node.parentNode.insertBefore(toAdd, node.nextSibling);
+};
+
+// See: https://bugzilla.mozilla.org/show_bug.cgi?id=550612
+// See: https://developer.mozilla.org/en/Code_snippets/HTML_to_DOM
+WindexNodes.prototype._afterHTML = function (html) {
+  this.forEach(function (node) {
+    var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"].
+        getService(Components.interfaces.nsIScriptableUnescapeHTML).
+        parseFragment(html, false, null, node);
+    after(node, fragment);
+  });
+  return this;
+};
+
+// See: https://developer.mozilla.org/En/DOM/Node.cloneNode
+WindexNodes.prototype._afterNode = function (nodeToAppend) {
+  this.forEach(function (node) { after(node, nodeToAppend.cloneNode(true)); });
+  return this;
+};
+
+// See: https://developer.mozilla.org/En/DOM/Node.cloneNode
+WindexNodes.prototype._afterWindexNodes = function (windexNodes) {
+  this.forEach(function (node) {
+    windexNodes.forEach(function (nodeToAppend) {
+      after(node, nodeToAppend.cloneNode(true));
     });
   });
   return this;
