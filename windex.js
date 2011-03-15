@@ -718,6 +718,8 @@ WindexNodes.prototype._unbindEvent = function (name, handler) {
   "mousedown",
   "mouseup",
   "mousemove",
+  "mouseenter",
+  "mouseleave",
   "keypress", // See: http://api.jquery.com/keypress/
   "keydown",
   "keyup",
