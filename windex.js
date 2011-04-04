@@ -7,7 +7,39 @@ var isNode = function (object) {
   return (object instanceof Ci.nsIDOMNode) ||
       (object instanceof Ci.nsIDOMHTMLDocument) ||
       (object instanceof Ci.nsIDOMWindow);
-}
+};
+
+// See: https://bugzilla.mozilla.org/show_bug.cgi?id=550612
+// See: https://developer.mozilla.org/en/DOM/DOMImplementation.createHTMLDocument
+// See: http://userscripts.org/guides/9
+var safeHTMLToDOM = function (document, html) {
+  if (document instanceof Ci.nsIImageDocument) {
+    if (document.implementation.createHTMLDocument) {
+      // FF4 ImageDocuments
+      var safeDoc = document.implementation.createHTMLDocument('safe');
+      var holder = safeDoc.createElement('div');
+      holder.innerHTML = html;
+      return document.importNode(holder, true);
+    }
+    else {
+      // FF3.* ImageDocuments
+      var docType = document.implementation.createDocumentType(
+        "html",
+        "-//W3C//DTD HTML 4.01 Transitional//EN",
+        "http://www.w3.org/TR/html4/loose.dtd"
+      );
+      var holderDoc = document.implementation.createDocument('', '', docType);
+      var holder = holderDoc.createElement('div');
+      holder.innerHTML = html;
+      return document.importNode(holder, true);
+    }
+  }
+  else {
+    var holder = document.createElement('div');
+    holder.innerHTML = html;
+    return holder;
+  }
+};
 
 var Windex = exports = function(selector, context) {
   // no sense in wrapping the nodes twice
@@ -298,9 +330,6 @@ WindexNodes.prototype.remove = function () {
 // See: http://api.jquery.com/append/
 WindexNodes.prototype.append = function (arg) {
   if (typeof arg == "string" || typeof arg == "number") {
-    if (this[0].ownerDocument instanceof Ci.nsIImageDocument) {
-      return this._appendHTMLtoImageDocument(arg);
-    }
     return this._appendHTML(arg);
   }
   if (isNode(arg)) { return this._appendNode(arg); }
@@ -310,8 +339,7 @@ WindexNodes.prototype.append = function (arg) {
 
 WindexNodes.prototype._appendHTML = function (html) {
   this.forEach(function (node) {
-    var holder = node.ownerDocument.createElement("div");
-    holder.innerHTML = html;
+    var holder = safeHTMLToDOM(node.ownerDocument, html);
     while (holder.firstChild) {
       node.appendChild(holder.firstChild);
     }
@@ -319,25 +347,6 @@ WindexNodes.prototype._appendHTML = function (html) {
   return this;
 };
 
-// See: https://bugzilla.mozilla.org/show_bug.cgi?id=550612
-// See: http://userscripts.org/guides/9
-WindexNodes.prototype._appendHTMLtoImageDocument = function (html) {
-  this.forEach(function (node) {
-    var document = node.ownerDocument;
-    var docType = document.implementation.createDocumentType(
-      "html",
-      "-//W3C//DTD HTML 4.01 Transitional//EN",
-      "http://www.w3.org/TR/html4/loose.dtd"
-    );
-    var holderDoc = document.implementation.createDocument('', '', docType);
-    var holder = holderDoc.createElement('html');
-    holder.innerHTML = html;
-    while (holder.firstChild) {
-      node.appendChild(holder.firstChild);
-    }
-  });
-  return this;
-};
 // See: https://developer.mozilla.org/En/DOM/Node.cloneNode
 WindexNodes.prototype._appendNode = function (nodeToAppend) {
   this.forEach(function (node) {
@@ -372,14 +381,12 @@ WindexNodes.prototype.before = function (arg) {
   throw new Error("'" + arg + "' is not a String, Node, or WindexNodes");
 };
 
-// See: https://bugzilla.mozilla.org/show_bug.cgi?id=550612
-// See: https://developer.mozilla.org/en/Code_snippets/HTML_to_DOM
 WindexNodes.prototype._beforeHTML = function (html) {
   this.forEach(function (node) {
-    var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"].
-        getService(Components.interfaces.nsIScriptableUnescapeHTML).
-        parseFragment(html, false, null, node);
-    node.parentNode.insertBefore(fragment, node);
+    var holder = safeHTMLToDOM(node.ownerDocument, html);
+    while (holder.firstChild) {
+      node.parentNode.insertBefore(holder.firstChild, node);
+    }
   });
   return this;
 };
@@ -418,14 +425,12 @@ var after = function (node, toAdd) {
   node.parentNode.insertBefore(toAdd, node.nextSibling);
 };
 
-// See: https://bugzilla.mozilla.org/show_bug.cgi?id=550612
-// See: https://developer.mozilla.org/en/Code_snippets/HTML_to_DOM
 WindexNodes.prototype._afterHTML = function (html) {
   this.forEach(function (node) {
-    var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"].
-        getService(Components.interfaces.nsIScriptableUnescapeHTML).
-        parseFragment(html, false, null, node);
-    after(node, fragment);
+    var holder = safeHTMLToDOM(node.ownerDocument, html);
+    while (holder.lastChild) {
+      after(node, holder.lastChild);
+    }
   });
   return this;
 };
@@ -471,19 +476,8 @@ WindexNodes.prototype._htmlSet = function (replacement) {
 };
 
 // See: http://api.jquery.com/replaceWith/
-// See: http://james.padolsey.com/javascript/asynchronous-innerhtml/
-// TODO: can also take a function
-// TODO: can take an element or a windexNodes
 WindexNodes.prototype.replaceWith = function (html) {
-  this.forEach(function (node) {
-    if (!node.parentNode) { return; };
-    var document = node.ownerDocument;
-    var div = document.createElement("div");
-    Windex(div).html(html);
-    var fragment = document.createDocumentFragment();
-    while (div.firstChild) { fragment.appendChild(div.firstChild); }
-    node.parentNode.replaceChild(fragment, node);
-  });
+  this.after(html).remove();
   return this;
 };
 
